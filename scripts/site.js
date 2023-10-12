@@ -209,6 +209,10 @@ function getLoanApplicationDataFromInputs() {
   var day = document.getElementById("inputDoBDay").value;
   var year = document.getElementById("inputDoBYear").value;
 
+  if(isNaN(month)) {
+    throw new TypeError("Month should be a number")
+  }
+
   var isEmployed = document.getElementById("IsEmployed").checked;
   var hasKids = document.getElementById("HasKids").checked;
   var hasLoans = document.getElementById("HasLoans").checked;
