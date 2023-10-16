@@ -209,25 +209,10 @@ function getLoanApplicationDataFromInputs() {
   var day = document.getElementById("inputDoBDay").value;
   var year = document.getElementById("inputDoBYear").value;
 
-  try {
-      if (isNaN(month)) {
-        throw new TypeError("Month should be a number", {cause: "my fault"});
-      } else if(month > 12) {
-            throw new RangeError("Month should be between 1 and 12")
-      }
-    
-  } catch (error) {
-    if(error instanceof TypeError) {
-        try {
-            if(error.cause == "my fault") {
-                console.log('its okay');
-            }
-        } catch (error) {
-            console.log(error.message);
-        }
-    } else if (error instanceof RangeError) {
-        console.log(`${error.name}: ${error.name}`);
-    }
+  if (isNaN(month)) {
+    throw new NumberError("inputDoB", month);
+  } else if (month > 12) {
+    throw new RangeError("Month should be between 1 and 12");
   }
 
   var isEmployed = document.getElementById("IsEmployed").checked;
@@ -419,7 +404,7 @@ function generateRickProfile(la) {
     Your unique application code is ${applicationCode}`;
 
   return summaryText;
-}
+};
 
 function createApplicationId() {
   var result = "";
@@ -429,7 +414,7 @@ function createApplicationId() {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
-}
+};
 
 function foo(strings, ...values) {
   let str = "";
@@ -440,4 +425,17 @@ function foo(strings, ...values) {
     str += strings.raw[i];
   }
   return str;
-}
+};
+
+class NumberError extends Error {
+  constructor(inputName, number, ...params) {
+    super(...params);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, NumberError);
+    };
+    this.name = 'NumberError';
+    this.number = number;
+    this.inputName = inputName;
+    this.message = `The value ${this.number} is not a number.`
+  };
+};
