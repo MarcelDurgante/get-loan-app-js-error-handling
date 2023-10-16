@@ -240,56 +240,25 @@ function getLoanApplicationDataFromInputs() {
 
 function validateApplication() {
   var valid = true;
-
-  var la = getLoanApplicationDataFromInputs();
-
-  if (la.ApplicantName == "") {
-    document.getElementById("inputNameValidation").style.display = "block";
-
-    valid = false;
-  } else {
+  try {
+    var la = getLoanApplicationDataFromInputs();
     document.getElementById("inputNameValidation").style.display = "none";
-  }
-
-  if (la.ApplicantDateOfBirth == undefined) {
-    document.getElementById("inputDoBValidation").style.display = "block";
-
-    valid = false;
-  } else {
     document.getElementById("inputDoBValidation").style.display = "none";
-  }
-
-  if (la.ApplicantAnnualIncome == "") {
-    document.getElementById("inputAnnualIncomeValidation").style.display =
-      "block";
-
-    valid = false;
-  } else {
-    document.getElementById("inputAnnualIncomeValidation").style.display =
-      "none";
-  }
-
-  if (la.LoanPurpose == "") {
-    document.getElementById("inputLoanPurposeValidation").style.display =
-      "block";
-
-    valid = false;
-  } else {
-    document.getElementById("inputLoanPurposeValidation").style.display =
-      "none";
-  }
-
-  if (la.LoanAmount == "") {
-    document.getElementById("inputLoanAmountValidation").style.display =
-      "block";
-
-    valid = false;
-  } else {
+    document.getElementById("inputAnnualIncomeValidation").style.display = "none";
+    document.getElementById("inputLoanPurposeValidation").style.display = "none";
     document.getElementById("inputLoanAmountValidation").style.display = "none";
+  } catch (error) {
+    valid = false;
+    if (error instanceof NumberError) {
+      var errorLabel = document.getElementById(error.inputName + 'Validation');
+      errorLabel.style.display = 'block';
+      errorLabel.innerHTML = error.message;
+    } else {
+      throw error;
+    }
   }
-
   return valid;
-}
+};
 
 function generateRickProfile(la) {
   var risk = 3;
