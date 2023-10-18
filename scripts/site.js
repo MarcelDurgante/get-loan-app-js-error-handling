@@ -147,30 +147,39 @@ function findLoanApplicationIndexByName(name) {
   return undefined;
 }
 
-function saveApplication() {
-  if (validateApplication()) {
-    if (SelectedLoanApplication != null) {
-      SelectedLoanApplication = getLoanApplicationDataFromInputs();
-      if (SelectedLoanApplicationIndex != undefined) {
-        LoanApplicationList[SelectedLoanApplicationIndex] =
-          SelectedLoanApplication;
+async function saveApplication() {
+  
+  return new Promise((resolve, reject) => {
+    if (validateApplication()) {
+      if (SelectedLoanApplication != null) {
+        SelectedLoanApplication = getLoanApplicationDataFromInputs();
+        if (SelectedLoanApplicationIndex != undefined) {
+          LoanApplicationList[SelectedLoanApplicationIndex] =
+            SelectedLoanApplication;
+        }
+      } else {
+        SelectedLoanApplication = getLoanApplicationDataFromInputs();
+
+        //there was no existing loan application selected
+        //so push a new one to the dropdownlistbox
+        LoanApplicationList.push(SelectedLoanApplication);
       }
+
+      bindLoansToDropDown();
+
+      var riskLabel = document.getElementById("riskSummary");
+      riskLabel.style.display = "block";
+      riskLabel.innerHTML = generateRickProfile(SelectedLoanApplication);
+
+      resolve();
+
     } else {
-      SelectedLoanApplication = getLoanApplicationDataFromInputs();
-
-      //there was no existing loan application selected
-      //so push a new one to the dropdownlistbox
-      LoanApplicationList.push(SelectedLoanApplication);
+      document.getElementById("riskSummary").style.display = "none";
+      reject(new Error("Save Failed"));
     }
-
-    bindLoansToDropDown();
-
-    var riskLabel = document.getElementById("riskSummary");
-    riskLabel.style.display = "block";
-    riskLabel.innerHTML = generateRickProfile(SelectedLoanApplication);
-  } else {
-    document.getElementById("riskSummary").style.display = "none";
-  }
+  }).catch((error) => {
+    console.error(error);
+  });
 }
 
 function clearApplication() {
@@ -255,7 +264,10 @@ function getLoanApplicationDataFromInputs() {
   la.LoanPurpose = document.getElementById("inputLoanPurpose").value;
   la.LoanAmount = document.getElementById("inputLoanAmount").value;
 
-  if (!la.ApplicantAnnualIncome || la.ApplicantAnnualIncome.trim().length === 0) {
+  if (
+    !la.ApplicantAnnualIncome ||
+    la.ApplicantAnnualIncome.trim().length === 0
+  ) {
     throw new RequiredError("inputAnnualIncome", "annual income");
   } else {
     if (isNaN(la.ApplicantAnnualIncome)) {
@@ -265,7 +277,7 @@ function getLoanApplicationDataFromInputs() {
 
   if (!la.LoanPurpose || la.LoanPurpose.trim().length === 0) {
     throw new RequiredError("inputLoanPurpose", "loan purpose");
-  } 
+  }
 
   if (!la.LoanAmount || la.LoanAmount.trim().length === 0) {
     throw new RequiredError("inputLoanAmount", "loan amount");
@@ -283,8 +295,10 @@ function validateApplication() {
     var la = getLoanApplicationDataFromInputs();
     document.getElementById("inputNameValidation").style.display = "none";
     document.getElementById("inputDoBValidation").style.display = "none";
-    document.getElementById("inputAnnualIncomeValidation").style.display = "none";
-    document.getElementById("inputLoanPurposeValidation").style.display = "none";
+    document.getElementById("inputAnnualIncomeValidation").style.display =
+      "none";
+    document.getElementById("inputLoanPurposeValidation").style.display =
+      "none";
     document.getElementById("inputLoanAmountValidation").style.display = "none";
   } catch (error) {
     valid = false;
