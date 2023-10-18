@@ -205,14 +205,36 @@ function getLoanApplicationDataFromInputs() {
 
   la.ApplicantName = document.getElementById("inputName").value;
 
+  if (!la.ApplicantName || la.ApplicantName.trim().length === 0) {
+    throw new RequiredError("inputName", "name");
+  }
+
   var month = document.getElementById("inputDoBMonth").value;
   var day = document.getElementById("inputDoBDay").value;
   var year = document.getElementById("inputDoBYear").value;
 
-  if (isNaN(month)) {
-    throw new NumberError("inputDoB", month);
-  } else if (month > 12) {
-    throw new RangeError("Month should be between 1 and 12");
+  if (!month || month.trim().length === 0) {
+    throw new RequiredError("inputDoB", "month");
+  } else {
+    if (isNaN(month)) {
+      throw new NumberError("inputDoB", month);
+    }
+  }
+
+  if (!day || day.trim().length === 0) {
+    throw new RequiredError("inputDoB", "day");
+  } else {
+    if (isNaN(day)) {
+      throw new NumberError("inputDoB", day);
+    }
+  }
+
+  if (!year || year.trim().length === 0) {
+    throw new RequiredError("inputDoB", "year");
+  } else {
+    if (isNaN(year)) {
+      throw new NumberError("inputDoB", year);
+    }
   }
 
   var isEmployed = document.getElementById("IsEmployed").checked;
@@ -229,12 +251,29 @@ function getLoanApplicationDataFromInputs() {
     la.ApplicantDateOfBirth = new Date(year, month, day);
   }
 
-  la.ApplicantAnnualIncome = Math.round(
-    document.getElementById("inputAnnualIncome").value
-  );
+  la.ApplicantAnnualIncome = document.getElementById("inputAnnualIncome").value;
   la.LoanPurpose = document.getElementById("inputLoanPurpose").value;
-  la.LoanAmount = Math.round(document.getElementById("inputLoanAmount").value);
+  la.LoanAmount = document.getElementById("inputLoanAmount").value;
 
+  if (!la.ApplicantAnnualIncome || la.ApplicantAnnualIncome.trim().length === 0) {
+    throw new RequiredError("inputAnnualIncome", "annual income");
+  } else {
+    if (isNaN(la.ApplicantAnnualIncome)) {
+      throw new NumberError("inputAnnualIncome", la.ApplicantAnnualIncome);
+    }
+  }
+
+  if (!la.LoanPurpose || la.LoanPurpose.trim().length === 0) {
+    throw new RequiredError("inputLoanPurpose", "loan purpose");
+  } 
+
+  if (!la.LoanAmount || la.LoanAmount.trim().length === 0) {
+    throw new RequiredError("inputLoanAmount", "loan amount");
+  } else {
+    if (isNaN(la.LoanAmount)) {
+      throw new NumberError("inputLoanAmount", la.LoanAmount);
+    }
+  }
   return la;
 }
 
@@ -249,16 +288,16 @@ function validateApplication() {
     document.getElementById("inputLoanAmountValidation").style.display = "none";
   } catch (error) {
     valid = false;
-    if (error instanceof NumberError) {
-      var errorLabel = document.getElementById(error.inputName + 'Validation');
-      errorLabel.style.display = 'block';
+    if (error instanceof NumberError || error instanceof RequiredError) {
+      var errorLabel = document.getElementById(error.inputName + "Validation");
+      errorLabel.style.display = "block";
       errorLabel.innerHTML = error.message;
     } else {
       throw error;
     }
   }
   return valid;
-};
+}
 
 function generateRickProfile(la) {
   var risk = 3;
@@ -373,7 +412,7 @@ function generateRickProfile(la) {
     Your unique application code is ${applicationCode}`;
 
   return summaryText;
-};
+}
 
 function createApplicationId() {
   var result = "";
@@ -383,7 +422,7 @@ function createApplicationId() {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
-};
+}
 
 function foo(strings, ...values) {
   let str = "";
@@ -394,17 +433,30 @@ function foo(strings, ...values) {
     str += strings.raw[i];
   }
   return str;
-};
+}
 
 class NumberError extends Error {
   constructor(inputName, number, ...params) {
     super(...params);
     if (Error.captureStackTrace) {
       Error.captureStackTrace(this, NumberError);
-    };
-    this.name = 'NumberError';
+    }
+    this.name = "NumberError";
     this.number = number;
     this.inputName = inputName;
-    this.message = `The value ${this.number} is not a number.`
-  };
-};
+    this.message = `The value ${this.number} is not a number.`;
+  }
+}
+
+class RequiredError extends Error {
+  constructor(inputName, valueName, ...params) {
+    super(...params);
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, RequiredError);
+    }
+    this.name = "RequiredError";
+    this.valueName = valueName;
+    this.inputName = inputName;
+    this.message = `${this.valueName} is required.`;
+  }
+}
